@@ -9,8 +9,8 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
-using Interfaces.Models;
-using static Interfaces.Constants.HttpConstants;
+using Common.Models;
+using static Common.Constants.HttpConstants;
 
 namespace DataLayer
 {
@@ -18,7 +18,7 @@ namespace DataLayer
     {
         Task<List<UserProfile>> Get();
 
-        Task<UserProfile?> Add(UserProfile userProfile, UserAuthentication? userAuthentication);
+        Task<UserProfileResponse> Add(UserProfile userProfile, UserAuthentication? userAuthentication);
 
         Task<UserAuthentication?> GetAuthentication(int userId);
 
@@ -26,7 +26,9 @@ namespace DataLayer
 
         Task<int> DeleteById(int id);
 
-        Task<int> Update(int id, JsonPatchDocument<UserProfile>? userProfilePatch);
+        Task<int> Patch(int id, JsonPatchDocument<UserProfile>? userProfilePatch);
+
+        Task<int> Update(UserProfile userProfile);
 
         Task<UserProfile?> GetByUsername(string username);
     }
@@ -37,6 +39,8 @@ namespace DataLayer
         private readonly IMapper _profileMapper;
         private readonly IMapper _authenticationMapper;
         private readonly string _connectionString;
+
+        private readonly string userNameUniqueConstraint = "UserProfile_UserName";
 
         public ProfileDataDatabaseService(ILogger logger, IMapper profileMapper, IMapper authenticationMapper, IConfiguration configuration)
         {
@@ -56,19 +60,30 @@ namespace DataLayer
         public async Task<UserProfile?> GetById(int id)
         {
             using IDbConnection connection = GetConnection();
-            UserProfileDto userProfileDto = await connection.GetAsync<UserProfileDto>(id);
-            if (userProfileDto == null) return null;
-            return _profileMapper.Map<UserProfile>(userProfileDto);
+            var userProfileDto = await connection.GetAsync<UserProfileDto>(id);
+            return userProfileDto == null ? null : _profileMapper.Map<UserProfile>(userProfileDto);
+        }
+
+        public async Task<int> Update(UserProfile userProfile)
+        {
+            if (userProfile.Id == null)
+            {
+                return HttpBadRequest;
+            }
+            using IDbConnection connection = GetConnection();
+            var userProfileDto = await connection.GetAsync<UserProfileDto>(userProfile.Id);
+            if (userProfileDto == null) return HttpBadRequest;
+            var updateProfileDto = _profileMapper.Map<UserProfileDto>(userProfile);
+            var numberRecordsUpdated = await connection.UpdateAsync(updateProfileDto);
+            return numberRecordsUpdated;
         }
 
         public async Task<UserProfile?> GetByUsername(string username)
         {
             using IDbConnection connection = GetConnection();
             var parameters = new { UserName = username };
-            var sql = "select * from UserProfiles where userName = @UserName";
-            UserProfileDto userProfileDto = (await connection.QueryAsync<UserProfileDto>(sql, parameters)).ToList().FirstOrDefault();
-            if (userProfileDto == null) return null;
-            return _profileMapper.Map<UserProfile>(userProfileDto);
+            var userProfileDto = (await connection.QueryAsync<UserProfileDto>("select * from UserProfiles where userName = @UserName", parameters)).ToList().FirstOrDefault();
+            return userProfileDto == null ? null : _profileMapper.Map<UserProfile>(userProfileDto);
         }
 
         public async Task<int> DeleteById(int id)
@@ -78,15 +93,10 @@ namespace DataLayer
             var userProfileDto = await connection.GetAsync<UserProfileDto>(id, transaction);
             if (userProfileDto == null) return HttpBadRequest;
             var numberRecordsDeleted = await connection.DeleteAsync<UserProfileDto>(id, transaction);
-            if (numberRecordsDeleted != 1)
-            {
-                return HttpInternalServerError;
-            }
-
-            return HttpOk;
+            return numberRecordsDeleted != 1 ? HttpInternalServerError : HttpOk;
         }
 
-        public async Task<int> Update(int id, JsonPatchDocument<UserProfile>? userProfilePatch)
+        public async Task<int> Patch(int id, JsonPatchDocument<UserProfile>? userProfilePatch)
         {
             using IDbConnection connection = GetConnection();
             using var transaction = connection.BeginTransaction();
@@ -98,39 +108,50 @@ namespace DataLayer
             return HttpOk;
         }
 
-        public async Task<UserProfile?> Add(UserProfile? userProfile, UserAuthentication? userAuthentication)
+        public async Task<UserProfileResponse> Add(UserProfile? userProfile, UserAuthentication? userAuthentication)
         {
-            if (userProfile == null) return null;
-            UserProfileDto userProfileDto = _profileMapper.Map<UserProfileDto>(userProfile);
-            UserAuthenticationDto userAuthenticationDto =
-                _authenticationMapper.Map<UserAuthenticationDto>(userAuthentication);
-            using IDbConnection conn = GetConnection();
-            int? id = null;
+            UserProfileResponse errorResponse = new UserProfileResponse(HttpInternalServerError);
+            if (userProfile == null) return errorResponse;
+            var userProfileDto = _profileMapper.Map<UserProfileDto>(userProfile);
+            var userAuthenticationDto = _authenticationMapper.Map<UserAuthenticationDto>(userAuthentication);
+            using IDbConnection connection = GetConnection();
+            int? id;
             IDbTransaction transaction;
 
-            using (transaction = conn.BeginTransaction())
+            using var dbTransaction = transaction = connection.BeginTransaction();
+            try
             {
-                try
+                id = await connection.InsertAsync(userProfileDto, transaction);
+                if (id != null)
                 {
-                    id = await conn.InsertAsync(userProfileDto, transaction);
-                    if (id != null)
-                    {
-                        userAuthenticationDto.UserId = id;
-                        await conn.InsertAsync(userAuthenticationDto, transaction);
-                    }
-                    transaction.Commit();
+                    userAuthenticationDto.UserId = id;
+                    await connection.InsertAsync(userAuthenticationDto, transaction);
                 }
-                catch (Exception e)
+                transaction.Commit();
+            }
+            catch (Exception e)
+            {
+                transaction.Rollback();
+                if (e.Message.Contains(userNameUniqueConstraint))
                 {
-                    _logger.Error(e, "failed to add user profile: {Profile}", userProfile);
-                    transaction.Rollback();
+                    _logger.Debug(e, "failed to add user profile: {Profile}. Username duplicate", userProfile);
+                    return new UserProfileResponse(HttpBadRequest, "Username already in use");
                 }
+                _logger.Error(e, "failed to add user profile: {Profile}", userProfile);
+                return errorResponse;
             }
             if (id == null)
             {
-                return null;
+                return errorResponse;
             }
-            return await GetById(id.Value);
+            var profile = await GetById(id.Value);
+            if (profile == null)
+            {
+                return errorResponse;
+            }
+
+            profile.Id = id;
+            return new UserProfileResponse(HttpOk, profile);
         }
 
         public async Task<UserAuthentication?> GetAuthentication(int userId)
@@ -139,8 +160,7 @@ namespace DataLayer
             var sql = "select * from UserAuthentication where userId = @UserId";
             using IDbConnection connection = GetConnection();
             UserAuthenticationDto userAuthenticationDto = (await connection.QueryAsync<UserAuthenticationDto>(sql, parameters)).ToList().FirstOrDefault();
-            if (userAuthenticationDto == null) return null;
-            return _authenticationMapper.Map<UserAuthentication>(userAuthenticationDto);
+            return userAuthenticationDto == null ? null : _authenticationMapper.Map<UserAuthentication>(userAuthenticationDto);
         }
 
         private IDbConnection GetConnection()

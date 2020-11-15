@@ -1,20 +1,19 @@
-﻿using Interfaces.Models;
-using Microsoft.AspNetCore.JsonPatch;
+﻿using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Services;
-using Services.Models.Responses;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Common.Models;
 
 namespace Api.Controllers
 {
     [Route("[controller]")]
     [ApiController]
-    public class UserController : ControllerBase
+    public class ProfileController : ControllerBase
     {
         private readonly IProfileService _profileService;
 
-        public UserController(IProfileService profileService)
+        public ProfileController(IProfileService profileService)
         {
             _profileService = profileService;
         }
@@ -41,9 +40,9 @@ namespace Api.Controllers
         }
 
         [HttpPut("")]
-        public async Task<ActionResult<UserProfileResponse?>> Login(UserProfile? userProfile)
+        public async Task<ActionResult<UserProfileResponse?>> Update(UserProfile? userProfile)
         {
-            var userResponse = await _profileService.Login(userProfile);
+            var userResponse = await _profileService.Update(userProfile);
             return StatusCode(userResponse.ApiFeedback.HttpCode, userResponse);
         }
 

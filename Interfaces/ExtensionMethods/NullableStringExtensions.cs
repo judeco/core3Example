@@ -1,8 +1,8 @@
-using Newtonsoft.Json.Linq;
 using System.Text.RegularExpressions;
+using Newtonsoft.Json.Linq;
 using static System.String;
 
-namespace Interfaces.ExtensionMethods
+namespace Common.ExtensionMethods
 {
     public static class NullableStringExtensions
     {

@@ -1,8 +1,8 @@
-﻿using Interfaces.Models;
-using Microsoft.AspNetCore.Cryptography.KeyDerivation;
+﻿using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 using System;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
+using Common.Models;
 
 namespace Services
 {

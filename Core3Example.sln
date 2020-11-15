@@ -24,9 +24,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SqlMigration", "SqlMigratio
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlMigration", "SqlMigration\SqlMigration.csproj", "{CADF4260-EF39-4EE4-9DF6-B6620A74F391}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Interfaces", "Interfaces", "{F0C572CD-7B56-4DC9-84F4-57C4AA673B88}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Common", "Common", "{F0C572CD-7B56-4DC9-84F4-57C4AA673B88}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Interfaces", "Interfaces\Interfaces.csproj", "{D1A54D19-665C-4CA2-8560-D60AD2C14006}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Common", "Interfaces\Common.csproj", "{D1A54D19-665C-4CA2-8560-D60AD2C14006}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Api", "Api\Api.csproj", "{837CD077-B350-4FD3-A489-BAB4AEFDCD0F}"
 EndProject

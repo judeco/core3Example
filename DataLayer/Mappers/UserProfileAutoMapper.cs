@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using System.Text.Json;
+using Common.Models;
 using Interfaces.Models;
 
 namespace DataLayer.Mappers
@@ -10,6 +11,7 @@ namespace DataLayer.Mappers
         {
             CreateMap<UserProfile, UserProfileDto>()
                 .ForMember(dest => dest.AdditionalData, opt => opt.MapFrom(src => getSerialized(src.AdditionalData)));
+            // ReSharper disable once EmptyStatement
             CreateMap<UserProfileDto, UserProfile>().ForMember(dest => dest.AdditionalData, opt => opt.MapFrom(src => getDeserialized(src.AdditionalData))); ;
         }
 

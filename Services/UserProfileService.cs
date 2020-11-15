@@ -1,6 +1,5 @@
 ﻿using DataLayer;
 using Interfaces.ExtensionMethods;
-using Interfaces.Models;
 using Microsoft.AspNetCore.JsonPatch;
 using Serilog;
 using Services.Models.Responses;
@@ -8,10 +7,12 @@ using System;
 using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using Common.ExtensionMethods;
+using Common.Models;
 using Utilities.Extensions;
-using static Interfaces.Constants.HttpConstants;
-using static Interfaces.Constants.Logging;
-using static Interfaces.Constants.UserFeedback;
+using static Common.Constants.HttpConstants;
+using static Common.Constants.Logging;
+using static Common.Constants.UserFeedback;
 
 namespace Services
 {
@@ -27,7 +28,7 @@ namespace Services
 
         Task<UserProfileResponse> Update(int? id, JsonPatchDocument<UserProfile>? userProfilePatch);
 
-        Task<UserProfileResponse> Login(UserProfile? inputUserProfile);
+        Task<UserProfileResponse> Update(UserProfile? inputUserProfile);
     }
 
     public class UserProfileService : IProfileService
@@ -115,7 +116,7 @@ namespace Services
 
             if (IsBadUserProfilePatch(userProfilePatch)) { return new UserProfileResponse(HttpBadRequest, BadRequestMsg); }
 
-            var updateResult = await _profileDataService.Update(id.Value, userProfilePatch);
+            var updateResult = await _profileDataService.Patch(id.Value, userProfilePatch);
 
             if (updateResult != HttpOk) return new UserProfileResponse(updateResult);
 
@@ -160,7 +161,7 @@ namespace Services
                 return new UserProfileResponse(HttpBadRequest);
             }
             TrimWhitespaceInUserProfile(userProfile);
-            if (IsBadProfile(userProfile))
+            if (IsBadAddProfile(userProfile))
             {
                 _logger.Warning(InvalidInput, nameof(userProfile), userProfile);
                 return new UserProfileResponse(HttpBadRequest, BadRequestMsg);
@@ -168,10 +169,14 @@ namespace Services
             try
             {
                 var userAuthentication = _passwordService.HashPassword(userProfile.Password);
-                userProfile = await _profileDataService.Add(userProfile, userAuthentication);
-                if (userProfile == null)
+                var response  = await _profileDataService.Add(userProfile, userAuthentication);
+                if (response.ApiFeedback.HttpCode == HttpBadRequest)
                 {
-                    return new UserProfileResponse(HttpInternalServerError, InternalServerErrorMsg);
+
+                }
+                if (response.ApiFeedback.HttpCode != HttpOk)
+                {
+                    return new UserProfileResponse(response.ApiFeedback.HttpCode, response.ApiFeedback?.Explanation);
                 }
                 return new UserProfileResponse(HttpOk, userProfile);
             }
@@ -203,7 +208,7 @@ namespace Services
             }
         }
 
-        public async Task<UserProfileResponse> Login(UserProfile? inputUserProfile)
+        public async Task<UserProfileResponse> Update(UserProfile? inputUserProfile)
         {
             if (inputUserProfile == null)
             {
@@ -211,9 +216,8 @@ namespace Services
                 return new UserProfileResponse(HttpBadRequest, BadRequestMsg);
             }
             TrimWhitespaceInUserProfile(inputUserProfile);
-            if (IsBadProfile(inputUserProfile))
+            if (IsBadUpdateProfile(inputUserProfile))
             {
-                _logger.Warning(InvalidInput, nameof(UserProfile.Username), inputUserProfile.Username);
                 return new UserProfileResponse(HttpBadRequest, BadRequestMsg);
             }
             try
@@ -221,26 +225,26 @@ namespace Services
                 var storedUserProfile = await _profileDataService.GetByUsername(inputUserProfile.Username);
                 if (storedUserProfile?.Id == null)
                 {
-                    _logger.Debug(FailedToLogin, inputUserProfile.Username);
-                    return new UserProfileResponse(HttpUnauthorized, LoginFailedMsg);
+                    return new UserProfileResponse(HttpUnauthorized);
                 }
-                var storedAuthentication = await _profileDataService.GetAuthentication(storedUserProfile.Id.Value);
-                if (storedAuthentication == null)
-                {
-                    return new UserProfileResponse(HttpInternalServerError, InternalServerErrorMsg);
-                }
-                var isCorrectPassword = _passwordService.VerifyPassword(storedAuthentication.PasswordHash, inputUserProfile.Password);
-                if (isCorrectPassword)
-                {
-                    return new UserProfileResponse(HttpOk, storedUserProfile);
-                }
-                return new UserProfileResponse(HttpUnauthorized, LoginFailedMsg);
+                ApplyUpdate(storedUserProfile, inputUserProfile);
+                await _profileDataService.Update(storedUserProfile);
+                return new UserProfileResponse(HttpOk, storedUserProfile);
             }
             catch (Exception e)
             {
-                _logger.Error(e, FailedToLogin, inputUserProfile.Username);
+                _logger.Error(e, FailedToUpdate, inputUserProfile.Username);
                 return new UserProfileResponse(HttpInternalServerError, InternalServerErrorMsg);
             }
+        }
+
+        private void ApplyUpdate(UserProfile storedUserProfile, UserProfile inputUserProfile)
+        {
+            if (inputUserProfile.Email.IsNotBlank())
+            {
+                storedUserProfile.Email = inputUserProfile.Email;
+            }
+            // TODO firstname and lastname
         }
 
         private void TrimWhitespaceInUserProfile(UserProfile userProfile)
@@ -251,7 +255,7 @@ namespace Services
 #pragma warning restore CS8601 // Possible null reference assignment.
         }
 
-        private bool IsBadProfile(UserProfile userProfile)
+        private bool IsBadAddProfile(UserProfile userProfile)
         {
             if (userProfile.Password.IsEmpty())
             {
@@ -264,6 +268,17 @@ namespace Services
                 _logger.Warning(BlankInput, nameof(userProfile.Username));
                 return true;
             }
+            return false;
+        }
+
+        private bool IsBadUpdateProfile(UserProfile userProfile)
+        {
+            if (userProfile.Email.IsNotBlank() && userProfile.Email.IsNotEmailFormat())
+            {
+                _logger.Warning(NotAnEmail, nameof(userProfile.Email));
+                return true;
+            }
+            // TODO check firstname and last name
             return false;
         }
     }

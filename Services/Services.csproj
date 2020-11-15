@@ -27,7 +27,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\DataLayer\DataLayer.csproj" />
-    <ProjectReference Include="..\Interfaces\Interfaces.csproj" />
+    <ProjectReference Include="..\Interfaces\Common.csproj" />
     <ProjectReference Include="..\Utiliites\Utilities.csproj" />
   </ItemGroup>
 

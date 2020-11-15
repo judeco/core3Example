@@ -1,11 +1,11 @@
-﻿using DataLayer;
+﻿using Common.Models;
+using DataLayer;
 using Interfaces.Models;
 using Moq;
 using Serilog;
 using Services;
-using Services.Models.Responses;
 using Xunit;
-using static Interfaces.Constants.HttpConstants;
+using static Common.Constants.HttpConstants;
 
 namespace Tests
 {

@@ -16,15 +16,18 @@
 						"type": "text"
 					}
 				],
+				"body": {
+					"mode": "raw",
+					"raw": "[\r\n  { \"op\": \"replace\", \"path\": \"/username\", \"value\": \"updated\" },\r\n]"
+				},
 				"url": {
-					"raw": "https://localhost:44360/api/user/",
+					"raw": "https://localhost:44360/user/",
 					"protocol": "https",
 					"host": [
 						"localhost"
 					],
 					"port": "44360",
 					"path": [
-						"api",
 						"user",
 						""
 					]
@@ -45,14 +48,14 @@
 					}
 				],
 				"url": {
-					"raw": "http://localhost:44360/user/",
+					"raw": "http://localhost:44360/profile/",
 					"protocol": "http",
 					"host": [
 						"localhost"
 					],
 					"port": "44360",
 					"path": [
-						"user",
+						"profile",
 						""
 					]
 				},
@@ -135,6 +138,36 @@
 				"url": {
 					"raw": "http://localhost:44360/user/",
 					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "44360",
+					"path": [
+						"user",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "patch",
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "[\r\n  { \"op\": \"replace\", \"path\": \"/username\", \"value\": \"updated\" }\r\n]"
+				},
+				"url": {
+					"raw": "https://localhost:44360/user/",
+					"protocol": "https",
 					"host": [
 						"localhost"
 					],

@@ -1,18 +1,18 @@
-﻿using static Interfaces.Constants.HttpConstants;
+﻿using static Common.Constants.HttpConstants;
 
-namespace Services.Models.Responses
+namespace Common.Models
 {
     public class ApiFeedback
     {
         public int HttpCode { get; }
-        private string? Explanation { get; }
+        public string? Explanation { get; }
 
         public ApiFeedback()
         {
             HttpCode = HttpOk;
         }
 
-        public ApiFeedback(int httpCode, string explanation)
+        public ApiFeedback(int httpCode, string? explanation)
         {
             HttpCode = httpCode;
             Explanation = explanation;

@@ -1,4 +1,6 @@
-﻿namespace Interfaces.Models
+﻿using Interfaces.Models;
+
+namespace Common.Models
 {
     public interface IUser
     {

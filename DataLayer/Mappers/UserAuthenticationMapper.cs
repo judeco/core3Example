@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using Interfaces.Models;
+using Common.Models;
 
 namespace DataLayer.Mappers
 {

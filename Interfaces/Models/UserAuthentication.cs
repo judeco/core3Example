@@ -1,4 +1,4 @@
-﻿namespace Interfaces.Models
+﻿namespace Common.Models
 {
     public class UserAuthentication
     {

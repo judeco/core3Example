@@ -1,4 +1,4 @@
-﻿namespace Interfaces.Constants
+﻿namespace Common.Constants
 {
     public static class HttpConstants
     {

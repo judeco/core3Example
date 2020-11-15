@@ -1,5 +1,5 @@
-﻿using Interfaces.Models;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using Common.Models;
 
 namespace Services.Models.Responses
 {

@@ -1,4 +1,4 @@
-﻿namespace Interfaces.Constants
+﻿namespace Common.Constants
 {
     public static class Logging
     {
@@ -9,7 +9,8 @@
         public static readonly string InvalidInput = "@InputName is invalid @Input";
         public static readonly string FailedToAddDuplicate = "Failed to add duplicate @EntityName : @Entity";
         public static readonly string FailedToAdd = "Failed to add @InputName : @Input";
-        public static readonly string FailedToLogin = "Failed to login Username : @Username";
+        public static readonly string FailedToUpdate = "Failed to update profile:  @Profile";
         public static readonly string BlankInput = "@InputName should not be blank";
+        public static readonly string NotAnEmail = "@Input is not a valid email address";
     }
 }

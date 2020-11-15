@@ -6,8 +6,9 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using Interfaces.Models;
+using Common.Models;
 using Utilities.Extensions;
+using static Common.Constants.HttpConstants;
 
 namespace DataLayer
 {
@@ -20,7 +21,7 @@ namespace DataLayer
             _filePath = Path.Combine(Assembly.GetExecutingAssembly().Location, "Profiles.json");
         }
 
-        public async Task<UserProfile?> Add(UserProfile userProfile, UserAuthentication? userAuthentication)
+        public async Task<UserProfileResponse> Add(UserProfile userProfile, UserAuthentication? userAuthentication)
         {
             if (!File.Exists(_filePath))
             {
@@ -41,7 +42,8 @@ namespace DataLayer
             {
                 profiles.Add(userProfile);
             }
-            return await Task.FromResult(userProfile);
+            var profile =  await Task.FromResult(userProfile);
+            return new UserProfileResponse(HttpOk, profile);
         }
 
         public Task<int> DeleteById(int id)
@@ -64,12 +66,18 @@ namespace DataLayer
             throw new NotImplementedException();
         }
 
+        public Task<int> Update(UserProfile userProfile)
+        {
+            // TODO
+            throw new NotImplementedException();
+        }
+
         public Task<UserProfile?> GetByUsername(string username)
         {
             throw new NotImplementedException();
         }
 
-        public Task<int> Update(int id, JsonPatchDocument<UserProfile>? userProfilePatch)
+        public Task<int> Patch(int id, JsonPatchDocument<UserProfile>? userProfilePatch)
         {
             throw new NotImplementedException();
         }

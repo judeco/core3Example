@@ -1,7 +1,6 @@
-﻿using Interfaces.Models;
-using System;
+﻿using System;
 
-namespace Services.Models.Responses
+namespace Common.Models
 {
     public class UserProfileResponse : IEquatable<UserProfileResponse>
     {
@@ -14,7 +13,7 @@ namespace Services.Models.Responses
             ApiFeedback = new ApiFeedback(httpCode);
         }
 
-        public UserProfileResponse(int httpCode, string explanation)
+        public UserProfileResponse(int httpCode, string? explanation)
         {
             ApiFeedback = new ApiFeedback(httpCode, explanation);
         }
