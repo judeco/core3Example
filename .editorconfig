@@ -1,0 +1,7 @@
+﻿[*.{cs,vb}]
+
+# IDE0060: Remove unused parameter
+dotnet_code_quality_unused_parameters = all:silent
+
+# CS8629: Nullable value type may be null.
+dotnet_diagnostic.CS8629.severity = suggestion

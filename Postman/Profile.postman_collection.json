@@ -1,0 +1,152 @@
+{
+	"info": {
+		"_postman_id": "5096bca7-525f-4158-b8cc-a4d3ba5586d0",
+		"name": "Profile",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Update",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "https://localhost:44360/api/user/",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "44360",
+					"path": [
+						"api",
+						"user",
+						""
+					]
+				},
+				"description": "Add"
+			},
+			"response": []
+		},
+		{
+			"name": "Get",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "http://localhost:44360/user/",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "44360",
+					"path": [
+						"user",
+						""
+					]
+				},
+				"description": "Add"
+			},
+			"response": []
+		},
+		{
+			"name": "Get By Id",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "http://localhost:44360/user/1",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "44360",
+					"path": [
+						"user",
+						"1"
+					]
+				},
+				"description": "Add"
+			},
+			"response": []
+		},
+		{
+			"name": "Delete",
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "http://localhost:44360/user/1",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "44360",
+					"path": [
+						"user",
+						"1"
+					]
+				},
+				"description": "Add"
+			},
+			"response": []
+		},
+		{
+			"name": "Add",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"userName\": \"user1\",\r\n    \"email\": \"one@one.com\",\r\n}",
+					"options": {
+						"raw": {}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:44360/user/",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "44360",
+					"path": [
+						"user",
+						""
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"protocolProfileBehavior": {}
+}
